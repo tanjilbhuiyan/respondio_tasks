@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: S3 File Compression Lambda
+
+Parameters:
+  BucketName:
+    Type: String
+    Default: my-file-compression-bucket-12345
+    Description: Existing S3 bucket name for file storage
+
+  SourcePrefix:
+    Type: String
+    Default: incoming/
+    Description: Prefix for source files
+
+  ProcessedPrefix:
+    Type: String
+    Default: processed/
+    Description: Prefix for processed files
+
+Resources:
+  FileCompressionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: s3-file-compression
+      Runtime: python3.13
+      Handler: lambda_function.lambda_handler
+      CodeUri: ./
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref BucketName
+          SOURCE_PREFIX: !Ref SourcePrefix
+          PROCESSED_PREFIX: !Ref ProcessedPrefix
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref BucketName
+      Timeout: 300
+      MemorySize: 512
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt FileCompressionFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !Sub arn:aws:s3:::${BucketName}
+
+Outputs:
+  FunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt FileCompressionFunction.Arn
+
+  FunctionName:
+    Description: Lambda Function Name
+    Value: !Ref FileCompressionFunction

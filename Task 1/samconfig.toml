@@ -1,0 +1,23 @@
+version = 0.1
+
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "s3-file-compression-stack"
+resolve_s3 = true
+s3_prefix = "s3-file-compression-stack"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "BucketName=\"my-file-compression-bucket-12345\" SourcePrefix=\"incoming/\" ProcessedPrefix=\"processed/\""
+image_repositories = []
+
+[default.build]
+[default.build.parameters]
+use_container = false
+
+[default.sync]
+[default.sync.parameters]
+watch = true
+
+[default.global.parameters]
+region = "us-east-1"
